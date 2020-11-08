@@ -1,8 +1,22 @@
-## CoinPayments
+# CoinPayments [![GoDoc](https://godoc.org/github.com/aidenesco/coinpayments?status.svg)](https://godoc.org/github.com/aidenesco/coinpayments) [![Go Report Card](https://goreportcard.com/badge/github.com/aidenesco/coinpayments)](https://goreportcard.com/report/github.com/aidenesco/coinpayments)
 
-[![GoDoc](https://godoc.org/github.com/aidenesco/coinpayments?status.svg)](https://godoc.org/github.com/aidenesco/coinpayments)
-[![Go Report Card](https://goreportcard.com/badge/github.com/aidenesco/coinpayments)](https://goreportcard.com/report/github.com/aidenesco/coinpayments)
+This package is a Coinpayments.net client library. See official documentation [here](https://www.coinpayments.net/apidoc-intro)
 
+## Installation
 
-A package to call the CoinPayments api - documentation [here](https://www.coinpayments.net/apidoc-intro)
+```sh
+go get -u github.com/aidenesco/coinpayments
+```
+
+## Usage
+
+```go
+import "github.com/aidenesco/coinpayments"
+
+client := coinpayments.NewClient("public key", "private key")
+
+balances, _ := client.Balances()
+
+fmt.Println(balances)
+```
 
