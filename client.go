@@ -7,22 +7,23 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 )
 
-type errResponse struct {
-	Error string `json:"error"`
-}
-
-//ClientOption is an option used to modify a coinpayments api client
+//ClientOption is an option used to modify a client
 type ClientOption func(client *Client)
+
+//OptionalValue is an option used to add values to an api request
+type OptionalValue func(values *url.Values)
 
 //Client allows programmatic access to the coinpayments api
 type Client struct {
 	client     *http.Client
 	privateKey string
 	publicKey  string
+	ipnSecret  string
 }
 
 //NewClient returns a new Client with the applied options
@@ -46,15 +47,28 @@ func WithHTTPClient(httpClient *http.Client) ClientOption {
 	}
 }
 
-func (c *Client) call(callable callable, response interface{}) error {
-	data := callable.values()
+//WithIPNSecret is an option that makes the Client use the provided secret
+func WithIPNSecret(secret string) ClientOption {
+	return func(client *Client) {
+		client.ipnSecret = secret
+	}
+}
 
-	data.Add("key", c.publicKey)
-	data.Add("version", apiVersion)
-	data.Add("cmd", callable.command())
-	data.Add("format", apiFormat)
+//WithOptionalValue is an option that adds values to an api request
+func WithOptionalValue(key, value string) OptionalValue {
+	return func(values *url.Values) {
+		values.Set(key, value)
+	}
+}
 
-	sData := data.Encode()
+func (c *Client) call(cmd string, values *url.Values, response interface{}) error {
+
+	values.Add("key", c.publicKey)
+	values.Add("version", apiVersion)
+	values.Add("cmd", cmd)
+	values.Add("format", apiFormat)
+
+	sData := values.Encode()
 
 	dataHMAC, err := c.makeHMAC(sData)
 	if err != nil {
@@ -69,6 +83,8 @@ func (c *Client) call(callable callable, response interface{}) error {
 	req.Header.Add("HMAC", dataHMAC)
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Add("Content-Length", strconv.Itoa(len(sData)))
+	req.Header.Add("User-Agent", "github.com/aidenesco/coinpayments")
+	req.Header.Add("Accept", "application/json")
 
 	resp, err := c.client.Do(req)
 	if err != nil {
@@ -85,7 +101,8 @@ func (c *Client) call(callable callable, response interface{}) error {
 		return fmt.Errorf("coinpayments: error reading api response body - %v", err)
 	}
 
-	errResp := &errResponse{}
+	var errResp errResponse
+
 	if err := json.Unmarshal(body, &errResp); err != nil {
 		return fmt.Errorf("coinpayments: error unmarshaling api error response - %v", err)
 	}
@@ -110,10 +127,20 @@ func (c *Client) makeHMAC(data string) (string, error) {
 	return fmt.Sprintf("%x", hash.Sum(nil)), nil
 }
 
-func (c *Client) makeIPNHMAC(data string, ipnSecret string) (string, error) {
-	hash := hmac.New(sha512.New, []byte(ipnSecret))
+func (c *Client) makeIPNHMAC(data string) (string, error) {
+	hash := hmac.New(sha512.New, []byte(c.ipnSecret))
 	if _, err := hash.Write([]byte(data)); err != nil {
 		return "", err
 	}
 	return fmt.Sprintf("%x", hash.Sum(nil)), nil
+}
+
+func addOptionals(opts []OptionalValue, values *url.Values) {
+	for _, v := range opts {
+		v(values)
+	}
+}
+
+type errResponse struct {
+	Error string `json:"error"`
 }

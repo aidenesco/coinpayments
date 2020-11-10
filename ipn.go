@@ -7,6 +7,7 @@ import (
 	"net/url"
 )
 
+//IPN holds the data and type from an IPN
 type IPN struct {
 	ipnInformation
 	depositInformation            depositInformation
@@ -21,11 +22,11 @@ type IPN struct {
 }
 
 type ipnInformation struct {
-	IPNVersion string `json:"ipn_version"`
-	IPNType    string `json:"ipn_type"`
-	IPNMode    string `json:"ipn_mode"`
-	IPNId      string `json:"ipn_id"`
-	Merchant   string `json:"merchant"`
+	IPNVersion string
+	IPNType    string
+	IPNMode    string
+	IPNId      string
+	Merchant   string
 }
 
 type simpleIPN struct {
@@ -35,6 +36,7 @@ type simpleIPN struct {
 	simpleButtonFields
 }
 
+//ToSimpleIPN returns the data from the "simple" ipn type
 func (i *IPN) ToSimpleIPN() (*simpleIPN, error) {
 	if i.IPNType != "simple" {
 		return nil, fmt.Errorf("coinpayments: IPN type not 'simple'")
@@ -54,6 +56,7 @@ type buttonIPN struct {
 	advancedButtonFields
 }
 
+//ToButtonIPN returns the data from the "button" ipn type
 func (i *IPN) ToButtonIPN() (*buttonIPN, error) {
 	if i.IPNType != "button" {
 		return nil, fmt.Errorf("coinpayments: IPN type not 'button'")
@@ -73,6 +76,7 @@ type cartIPN struct {
 	shoppingCartButtonFields
 }
 
+//ToCartIPN returns the data from the "cart" ipn type
 func (i *IPN) ToCartIPN() (*cartIPN, error) {
 	if i.IPNType != "cart" {
 		return nil, fmt.Errorf("coinpayments: IPN type not 'cart'")
@@ -92,6 +96,7 @@ type donationIPN struct {
 	donationButtonFields
 }
 
+//ToDonationIPN returns the data from the "donation" ipn type
 func (i *IPN) ToDonationIPN() (*donationIPN, error) {
 	if i.IPNType != "donation" {
 		return nil, fmt.Errorf("coinpayments: IPN type not 'donation'")
@@ -109,6 +114,7 @@ type depositIPN struct {
 	depositInformation
 }
 
+//ToDepositIPN returns the data from the "deposit" ipn type
 func (i *IPN) ToDepositIPN() (*depositIPN, error) {
 	if i.IPNType != "deposit" {
 		return nil, fmt.Errorf("coinpayments: IPN type not 'deposit'")
@@ -124,6 +130,7 @@ type withdrawalIPN struct {
 	withdrawalInformation
 }
 
+//ToWithdrawalIPN returns the data from the "withdrawal" ipn type
 func (i *IPN) ToWithdrawalIPN() (*withdrawalIPN, error) {
 	if i.IPNType != "withdrawal" {
 		return nil, fmt.Errorf("coinpayments: IPN type not 'withdrawal'")
@@ -139,6 +146,7 @@ type apiIPN struct {
 	apiGeneratedTransactionFields
 }
 
+//ToApiIPN returns the data from the "api" ipn type
 func (i *IPN) ToApiIPN() (*apiIPN, error) {
 	if i.IPNType != "api" {
 		return nil, fmt.Errorf("coinpayments: IPN type not 'api'")
@@ -149,16 +157,17 @@ func (i *IPN) ToApiIPN() (*apiIPN, error) {
 	}, nil
 }
 
-func (c *Client) ParseIPN(r *http.Request, ipnSecret string) (*IPN, error) {
+//ParseIPN takes a http request and parses the IPN information from it
+func (c *Client) ParseIPN(r *http.Request) (*IPN, error) {
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		return nil, fmt.Errorf("coinpayments: error reading request body - %v", err)
 	}
 
-	if ipnSecret != "" {
+	if c.ipnSecret != "" {
 		hmac := r.Header.Get("HMAC")
 
-		genHMAC, err := c.makeIPNHMAC(string(data), ipnSecret)
+		genHMAC, err := c.makeIPNHMAC(string(data))
 		if err != nil {
 			return nil, fmt.Errorf("coinpayments: error generating ipn HMAC - %v", err)
 		}
@@ -424,181 +433,181 @@ func (c *Client) ParseIPN(r *http.Request, ipnSecret string) (*IPN, error) {
 }
 
 type depositInformation struct {
-	TransactionID string `json:"txn_id"`
-	Address       string `json:"address"`
-	DestTag       string `json:"dest_tag"`
-	Status        string `json:"status"`
-	StatusText    string `json:"status_text"`
-	Currency      string `json:"currency"`
-	Confirms      string `json:"confirms"`
-	Amount        string `json:"amount"`
-	Amounti       string `json:"amounti"`
-	Fee           string `json:"fee"`
-	Feei          string `json:"feei"`
-	FiatCoin      string `json:"fiat_coin"`
-	FiatAmount    string `json:"fiat_amount"`
-	FiatAmounti   string `json:"fiat_amounti"`
-	FiatFee       string `json:"fiat_fee"`
-	FiatFeei      string `json:"fiat_feei"`
+	TransactionID string
+	Address       string
+	DestTag       string
+	Status        string
+	StatusText    string
+	Currency      string
+	Confirms      string
+	Amount        string
+	Amounti       string
+	Fee           string
+	Feei          string
+	FiatCoin      string
+	FiatAmount    string
+	FiatAmounti   string
+	FiatFee       string
+	FiatFeei      string
 }
 
 type withdrawalInformation struct {
-	ID            string `json:"id"`
-	Status        string `json:"status"`
-	StatusText    string `json:"status_text"`
-	Address       string `json:"address"`
-	TransactionID string `json:"txn_id"`
-	Currency      string `json:"currency"`
-	Amount        string `json:"amount"`
-	Amounti       string `json:"amounti"`
+	ID            string
+	Status        string
+	StatusText    string
+	Address       string
+	TransactionID string
+	Currency      string
+	Amount        string
+	Amounti       string
 }
 
 type buyerInformation struct {
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Company   string `json:"company"`
-	Email     string `json:"email"`
+	FirstName string
+	LastName  string
+	Company   string
+	Email     string
 }
 
 type shippingInformation struct {
-	Address1    string `json:"address1"`
-	Address2    string `json:"address2"`
-	City        string `json:"city"`
-	State       string `json:"state"`
-	ZipCode     string `json:"zip"`
-	Country     string `json:"country"`
-	CountryName string `json:"country_name"`
-	Phone       string `json:"phone"`
+	Address1    string
+	Address2    string
+	City        string
+	State       string
+	ZipCode     string
+	Country     string
+	CountryName string
+	Phone       string
 }
 
 type simpleButtonFields struct {
-	Status           string `json:"status"`
-	StatusText       string `json:"status_text"`
-	TransactionID    string `json:"txn_id"`
-	Currency1        string `json:"currency1"`
-	Currency2        string `json:"currency2"`
-	Amount1          string `json:"amount1"`
-	Amount2          string `json:"amount2"`
-	Subtotal         string `json:"subtotal"`
-	Shipping         string `json:"shipping"`
-	Tax              string `json:"tax"`
-	Fee              string `json:"fee"`
-	Net              string `json:"net"`
-	ItemAmount       string `json:"item_amount"`
-	ItemName         string `json:"item_name"`
-	ItemDescription  string `json:"item_desc"`
-	ItemNumber       string `json:"item_number"`
-	Invoice          string `json:"invoice"`
-	Custom           string `json:"custom"`
-	Option1Name      string `json:"on1"`
-	Option1Value     string `json:"ov1"`
-	Option2Name      string `json:"on2"`
-	Option2Value     string `json:"ov2"`
-	SendTransaction  string `json:"send_tx"`
-	ReceivedAmount   string `json:"received_amount"`
-	ReceivedConfirms string `json:"received_confirms"`
+	Status           string
+	StatusText       string
+	TransactionID    string
+	Currency1        string
+	Currency2        string
+	Amount1          string
+	Amount2          string
+	Subtotal         string
+	Shipping         string
+	Tax              string
+	Fee              string
+	Net              string
+	ItemAmount       string
+	ItemName         string
+	ItemDescription  string
+	ItemNumber       string
+	Invoice          string
+	Custom           string
+	Option1Name      string
+	Option1Value     string
+	Option2Name      string
+	Option2Value     string
+	SendTransaction  string
+	ReceivedAmount   string
+	ReceivedConfirms string
 }
 
 type advancedButtonFields struct {
-	Status           string `json:"status"`
-	StatusText       string `json:"status_text"`
-	TransactionID    string `json:"txn_id"`
-	Currency1        string `json:"currency1"`
-	Currency2        string `json:"currency2"`
-	Amount1          string `json:"amount1"`
-	Amount2          string `json:"amount2"`
-	Subtotal         string `json:"subtotal"`
-	Shipping         string `json:"shipping"`
-	Tax              string `json:"tax"`
-	Fee              string `json:"fee"`
-	Net              string `json:"net"`
-	ItemAmount       string `json:"item_amount"`
-	ItemName         string `json:"item_name"`
-	Quantity         string `json:"quantity"`
-	ItemNumber       string `json:"item_number"`
-	Invoice          string `json:"invoice"`
-	Custom           string `json:"custom"`
-	Option1Name      string `json:"on1"`
-	Option1Value     string `json:"ov1"`
-	Option2Name      string `json:"on2"`
-	Option2Value     string `json:"ov2"`
-	Extra            string `json:"extra"`
-	SendTransaction  string `json:"send_tx"`
-	ReceivedAmount   string `json:"received_amount"`
-	ReceivedConfirms string `json:"received_confirms"`
+	Status           string
+	StatusText       string
+	TransactionID    string
+	Currency1        string
+	Currency2        string
+	Amount1          string
+	Amount2          string
+	Subtotal         string
+	Shipping         string
+	Tax              string
+	Fee              string
+	Net              string
+	ItemAmount       string
+	ItemName         string
+	Quantity         string
+	ItemNumber       string
+	Invoice          string
+	Custom           string
+	Option1Name      string
+	Option1Value     string
+	Option2Name      string
+	Option2Value     string
+	Extra            string
+	SendTransaction  string
+	ReceivedAmount   string
+	ReceivedConfirms string
 }
 
 type shoppingCartButtonFields struct {
-	Status           string `json:"status"`
-	StatusText       string `json:"status_text"`
-	TransactionID    string `json:"txn_id"`
-	Currency1        string `json:"currency1"`
-	Currency2        string `json:"currency2"`
-	Amount1          string `json:"amount1"`
-	Amount2          string `json:"amount2"`
-	Subtotal         string `json:"subtotal"`
-	Shipping         string `json:"shipping"`
-	Tax              string `json:"tax"`
-	Fee              string `json:"fee"`
-	ItemName         string `json:"item_name_#"`
-	ItemAmount       string `json:"item_amount_#"`
-	ItemQuantity     string `json:"item_quantity_#"`
-	ItemNumber       string `json:"item_number_#"`
-	Option1Name      string `json:"item_on1_#"`
-	Option1Value     string `json:"item_ov1_#"`
-	Option2Name      string `json:"item_on2_#"`
-	Option2Value     string `json:"item_ov2_#"`
-	Invoice          string `json:"invoice"`
-	Custom           string `json:"custom"`
-	Extra            string `json:"extra"`
-	SendTransaction  string `json:"send_tx"`
-	ReceivedAmount   string `json:"received_amount"`
-	ReceivedConfirms string `json:"received_confirms"`
+	Status           string
+	StatusText       string
+	TransactionID    string
+	Currency1        string
+	Currency2        string
+	Amount1          string
+	Amount2          string
+	Subtotal         string
+	Shipping         string
+	Tax              string
+	Fee              string
+	ItemName         string
+	ItemAmount       string
+	ItemQuantity     string
+	ItemNumber       string
+	Option1Name      string
+	Option1Value     string
+	Option2Name      string
+	Option2Value     string
+	Invoice          string
+	Custom           string
+	Extra            string
+	SendTransaction  string
+	ReceivedAmount   string
+	ReceivedConfirms string
 }
 
 type donationButtonFields struct {
-	Status           string `json:"status"`
-	StatusText       string `json:"status_text"`
-	TransactionID    string `json:"txn_id"`
-	Currency1        string `json:"currency1"`
-	Currency2        string `json:"currency2"`
-	Amount1          string `json:"amount1"`
-	Amount2          string `json:"amount2"`
-	Subtotal         string `json:"subtotal"`
-	Shipping         string `json:"shipping"`
-	Tax              string `json:"tax"`
-	Fee              string `json:"fee"`
-	Net              string `json:"net"`
-	ItemName         string `json:"item_name"`
-	ItemNumber       string `json:"item_number"`
-	Invoice          string `json:"invoice"`
-	Custom           string `json:"custom"`
-	Option1Name      string `json:"on1"`
-	Option1Value     string `json:"ov1"`
-	Option2Name      string `json:"on2"`
-	Option2Value     string `json:"ov2"`
-	Extra            string `json:"extra"`
-	SendTransaction  string `json:"send_tx"`
-	ReceivedAmount   string `json:"received_amount"`
-	ReceivedConfirms string `json:"received_confirms"`
+	Status           string
+	StatusText       string
+	TransactionID    string
+	Currency1        string
+	Currency2        string
+	Amount1          string
+	Amount2          string
+	Subtotal         string
+	Shipping         string
+	Tax              string
+	Fee              string
+	Net              string
+	ItemName         string
+	ItemNumber       string
+	Invoice          string
+	Custom           string
+	Option1Name      string
+	Option1Value     string
+	Option2Name      string
+	Option2Value     string
+	Extra            string
+	SendTransaction  string
+	ReceivedAmount   string
+	ReceivedConfirms string
 }
 
 type apiGeneratedTransactionFields struct {
-	Status           string `json:"status"`
-	StatusText       string `json:"status_text"`
-	TransactionID    string `json:"txn_id"`
-	Currency1        string `json:"currency1"`
-	Currency2        string `json:"currency2"`
-	Amount1          string `json:"amount1"`
-	Amount2          string `json:"amount2"`
-	Fee              string `json:"fee"`
-	BuyerName        string `json:"buyer_name"`
-	Email            string `json:"email"`
-	ItemName         string `json:"item_name"`
-	ItemNumber       string `json:"item_number"`
-	Invoice          string `json:"invoice"`
-	Custom           string `json:"custom"`
-	SendTransaction  string `json:"send_tx"`
-	ReceivedAmount   string `json:"received_amount"`
-	ReceivedConfirms string `json:"received_confirms"`
+	Status           string
+	StatusText       string
+	TransactionID    string
+	Currency1        string
+	Currency2        string
+	Amount1          string
+	Amount2          string
+	Fee              string
+	BuyerName        string
+	Email            string
+	ItemName         string
+	ItemNumber       string
+	Invoice          string
+	Custom           string
+	SendTransaction  string
+	ReceivedAmount   string
+	ReceivedConfirms string
 }

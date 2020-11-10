@@ -1,3 +1,4 @@
+//Package coinpayments allows programmatic use of the coinpayments.net api
 package coinpayments
 
 const (
