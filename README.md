@@ -1,6 +1,6 @@
-# CoinPayments [![PkgGoDev](https://pkg.go.dev/badge/github.com/aidenesco/coinpayments)](https://pkg.go.dev/github.com/aidenesco/coinpayments) [![Go Report Card](https://goreportcard.com/badge/github.com/aidenesco/coinpayments)](https://goreportcard.com/report/github.com/aidenesco/coinpayments)
+# coinpayments [![PkgGoDev](https://pkg.go.dev/badge/github.com/aidenesco/coinpayments)](https://pkg.go.dev/github.com/aidenesco/coinpayments) [![Go Report Card](https://goreportcard.com/badge/github.com/aidenesco/coinpayments)](https://goreportcard.com/report/github.com/aidenesco/coinpayments)
 
-This package is a Coinpayments.net client library. See official documentation [here](https://www.coinpayments.net/apidoc-intro)
+This package is a coinpayments.net client library. See official documentation [here](https://www.coinpayments.net/apidoc-intro)
 
 ## Installation
 
